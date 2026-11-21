@@ -1,4 +1,4 @@
-# EINSATZ.LOG 1.6.4
+# EINSATZ.LOG 1.7.0
 
 Alle Dateien direkt ins bestehende GitHub-Repository (Hauptverzeichnis) hochladen. Kein src-Ordner erforderlich. Alte src-Dateien dürfen bleiben, werden nicht mehr geladen. GitHub Pages auf main / root belassen. Auch als Netlify-ZIP verwendbar.
 

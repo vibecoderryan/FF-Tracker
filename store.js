@@ -1,13 +1,14 @@
 // Versioniertes, erweiterbares Datenschema. Einsätze speichern bewusst keine Zeitstempel.
-const DB='einsatzlog-db', VERSION=10;
-export const tables=['incidents','duties','templates','todos','procurement','payouts','keywords','dutyCategories','courses','qualifications','clothing','meals','preferences','awards','competitions','judging','incidentRoles','vehicles'];
+const DB='einsatzlog-db', VERSION=11;
+export const tables=['incidents','duties','templates','todos','procurement','payouts','keywords','dutyCategories','courses','qualifications','clothing','meals','preferences','awards','competitions','judging','incidentRoles','vehicles','publicPosts','publicIdeas','publicTemplates','publicPlatforms','publicEvents','customKinds','manualEvents','yearGoals','jfTraining','trash'];
 let dbPromise;
 function db(){if(!dbPromise)dbPromise=new Promise((resolve,reject)=>{const req=indexedDB.open(DB,VERSION);req.onupgradeneeded=(event)=>{for(const t of tables)if(!req.result.objectStoreNames.contains(t))req.result.createObjectStore(t,{keyPath:'id'});if(!req.transaction.objectStoreNames.contains('incidentRoles'))throw Error('Positionsspeicher fehlt');if(event.oldVersion<9){const r=req.transaction.objectStore('incidentRoles');const presets=['Angriffstruppführer','Angriffstruppmann','Wassertruppführer','Wassertruppmann','Schlauchtruppführer','Schlauchtruppmann','Maschinist','Melder','Gruppenführer','Staffelführer','Truppführer','Sonstige Funktion'];presets.forEach((name,i)=>r.put({id:'preset-position-'+i,name,sort:i}));}};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});return dbPromise}
 export async function all(table){const d=await db();return new Promise((ok,no)=>{const r=d.transaction(table,'readonly').objectStore(table).getAll();r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)})}
 export async function put(table,value){const d=await db();return new Promise((ok,no)=>{const tx=d.transaction(table,'readwrite');tx.objectStore(table).put(value);tx.oncomplete=ok;tx.onerror=()=>no(tx.error)})}
-export async function remove(table,id){const d=await db();return new Promise((ok,no)=>{const tx=d.transaction(table,'readwrite');tx.objectStore(table).delete(id);tx.oncomplete=ok;tx.onerror=()=>no(tx.error)})}
+export async function remove(table,id){const d=await db();return new Promise((ok,no)=>{const tx=d.transaction([table,...(table==='trash'?[]:['trash'])],'readwrite'),s=tx.objectStore(table);if(table==='trash')s.delete(id);else{const r=s.get(id);r.onsuccess=()=>{if(r.result){tx.objectStore('trash').put({id:crypto.randomUUID(),table,record:r.result,deletedAt:Date.now()});s.delete(id)}}}tx.oncomplete=ok;tx.onerror=()=>no(tx.error)})}
+export async function recover(id){const d=await db(),entries=await all('trash'),x=entries.find(r=>r.id===id);if(!x||!tables.includes(x.table)||x.table==='trash')return;return new Promise((ok,no)=>{const tx=d.transaction([x.table,'trash'],'readwrite'),s=tx.objectStore(x.table),r=s.get(x.record.id);r.onsuccess=()=>{if(r.result){tx.abort();return}s.add(x.record);tx.objectStore('trash').delete(id)};tx.oncomplete=ok;tx.onabort=()=>no(Error('ID bereits vorhanden oder Wiederherstellung fehlgeschlagen'));tx.onerror=()=>no(tx.error)})}
 export const uid=()=>crypto.randomUUID();
-export async function backup(){const data={format:'einsatzlog',version:8,collections:{}};for(const t of tables)data.collections[t]=await all(t);return data}
+export async function backup(){const data={format:'einsatzlog',version:9,collections:{}};for(const t of tables)data.collections[t]=await all(t);return data}
 
 // Abgleichender Import: bestehende IDs und inhaltlich identische Datensätze
 // werden nicht erneut eingetragen. Bestehende Datensätze haben Vorrang.
