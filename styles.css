@@ -270,3 +270,12 @@ input,select,textarea{max-width:100%;min-width:0}input:not([type="checkbox"]):no
 .weekday-chart{align-items:center}.weekday-chart>span:first-child{min-width:36px}.weekday-chart strong{min-width:28px;text-align:right}
 @media(max-width:370px){.colored-calendar{gap:2px}.colored-calendar .day{min-height:45px}.calendar-dots{gap:1px}.calendar-legend{gap:6px 10px}}
 @media(min-width:768px){.colored-calendar .day{min-height:64px}.colored-calendar .calendar-dot{width:7px;height:7px}.calendar-day-items{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* 1.6.3: Jeder Eintrag erhält einen Punkt; Zeilen wachsen bei Bedarf. */
+.calendar-dots{flex-wrap:wrap;width:100%;min-width:0;align-content:center;overflow:visible}
+.colored-calendar .day{height:auto;padding:5px 2px;align-self:stretch}
+.colored-calendar{grid-auto-rows:auto}
+.calendar-dot.type-procurement{background:#48d78d}.calendar-event.type-procurement{border-left-color:#48d78d}
+.calendar-settings{margin:10px 0;border:1px solid #354027;padding:10px;background:#12180e}
+.calendar-settings summary{cursor:pointer;color:#e3ff36;font-size:12px;font-weight:700;padding:5px 0}
+.calendar-options{display:grid;gap:6px;margin:10px 0}.calendar-options .check-row{display:flex;align-items:center;gap:8px;margin:0;min-height:32px}.calendar-options input{width:20px;height:20px;flex:none}
